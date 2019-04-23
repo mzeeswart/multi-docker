@@ -1,0 +1,25 @@
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t mzeeswart/react-test -f ./client/Dockerfile.dev ./client/Dockerfile.dev
+
+script:
+  - docker run mzeeswart/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t mzeeswart/multi-client ./client
+  - docker build -t mzeeswart/multi-nginx ./nginx
+  - docker build -t mzeeswart/multi-server ./server
+  - docker build -t mzeeswart/multi-worker ./worker
+# Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password --stdin
+# Take images and push them to docker hub
+  - docker push mzeeswart/multi-client
+  - docker push mzeeswart/multi-nginx
+  - docker push mzeeswart/multi-server
+  - docker push mzeeswart/multi-worker
+
+  
+
